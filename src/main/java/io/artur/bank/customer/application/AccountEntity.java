@@ -3,6 +3,7 @@ package io.artur.bank.customer.application;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
+import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 import akka.persistence.typed.PersistenceId;
 import akka.persistence.typed.javadsl.CommandHandlerWithReply;
 import akka.persistence.typed.javadsl.EventHandler;
@@ -15,6 +16,9 @@ import io.artur.bank.customer.domain.AccountEvent;
 import io.artur.bank.customer.domain.AccountId;
 
 public class AccountEntity extends EventSourcedBehaviorWithEnforcedReplies<AccountEntityCommand, AccountEvent, Account> {
+
+    public static final EntityTypeKey<AccountEntityCommand> ACCOUNT_ENTITY_TYPE_KEY =
+            EntityTypeKey.create(AccountEntityCommand.class, "Account");
 
     private final AccountId accountId;
     private final Clock clock;
@@ -43,6 +47,7 @@ public class AccountEntity extends EventSourcedBehaviorWithEnforcedReplies<Accou
     @Override
     public CommandHandlerWithReply<AccountEntityCommand, AccountEvent, Account> commandHandler() {
         return newCommandHandlerWithReplyBuilder().forStateType(Account.class)
+                .onCommand(AccountEntityCommand.GetAccount.class, this::returnState)
                 .onCommand(AccountEntityCommand.AccountCommandEnvelope.class, this::handleAccountCommand)
                 .build();
     }
@@ -68,5 +73,9 @@ public class AccountEntity extends EventSourcedBehaviorWithEnforcedReplies<Accou
         return newEventHandlerBuilder()
                 .forStateType(Account.class)
                 .onAnyEvent(Account::apply);
+    }
+
+    private ReplyEffect<AccountEvent, Account> returnState(Account account, AccountEntityCommand.GetAccount getAccount) {
+        return Effect().reply(getAccount.replyTo(), account);
     }
 }

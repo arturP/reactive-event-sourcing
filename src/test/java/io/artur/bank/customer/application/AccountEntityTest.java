@@ -49,6 +49,26 @@ class AccountEntityTest {
         assertThat(accountDeposited.accountId()).isEqualTo(accountId);
     }
 
+    @Test
+    void shouldDepositAccount_WithProbe() {
+        var accountId = AccountId.of();
+        var accountEntityRef = testKit.spawn(AccountEntity.create(accountId, clock));
+        var commandResponseProbe = testKit.<AccountEntityResponse>createTestProbe();
+        var accountResponseProbe = testKit.<Account>createTestProbe();
+
+        var accountDeposit = randomDeposit(accountId);
+
+        accountEntityRef.tell(toEnvelope(accountDeposit, commandResponseProbe.getRef()));
+
+        commandResponseProbe.expectMessageClass(AccountEntityResponse.CommandProcessed.class);
+
+        accountEntityRef.tell(new AccountEntityCommand.GetAccount(accountResponseProbe.getRef()));
+
+        final Account returnedAccount = accountResponseProbe.receiveMessage();
+        assertThat(returnedAccount.getId()).isEqualTo(accountId);
+        assertThat(returnedAccount.getBalance()).isEqualTo(accountDeposit.amount());
+    }
+
     private AccountEntityCommand.AccountCommandEnvelope toEnvelope(AccountCommand accountCommand, ActorRef<AccountEntityResponse> replyTo) {
         return new AccountEntityCommand.AccountCommandEnvelope(accountCommand, replyTo);
     }
