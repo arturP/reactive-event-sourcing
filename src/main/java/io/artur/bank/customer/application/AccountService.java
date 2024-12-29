@@ -18,7 +18,7 @@ import static io.artur.bank.customer.application.AccountEntity.ACCOUNT_ENTITY_TY
 public class AccountService {
 
     private final ClusterSharding sharding;
-    private Duration askTimeout = Duration.ofSeconds(3);
+    private Duration askTimeout = Duration.ofSeconds(10);
 
     public AccountService(final ClusterSharding sharding, final Clock clock) {
         this.sharding = sharding;

@@ -9,14 +9,13 @@ import io.artur.bank.base.domain.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import akka.persistence.testkit.PersistenceTestKitPlugin;
 
 @Configuration
 public class BaseConfiguration {
 
     @Bean
     Config config() {
-        return PersistenceTestKitPlugin.config().withFallback(ConfigFactory.load());
+        return ConfigFactory.load();
     }
 
     @Bean(destroyMethod = "terminate")
