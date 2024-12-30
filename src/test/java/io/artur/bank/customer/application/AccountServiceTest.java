@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
 
+import static io.artur.bank.customer.application.Blocking.await;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AccountServiceTest {
@@ -32,13 +33,26 @@ public class AccountServiceTest {
     }
 
     @Test
+    void shouldCreateAccount() throws ExecutionException, InterruptedException {
+        //given
+        var accountName = "Test";
+        var accountType = "SAVINGS";
+
+        //when
+        var result = await(accountService.createAccount(accountName, accountType).toCompletableFuture());
+
+        //then
+        assertThat(result).isInstanceOf(AccountEntityResponse.CommandProcessed.class);
+    }
+
+    @Test
     void shouldDepositAccount() throws ExecutionException, InterruptedException {
         //given
         var accountId = AccountId.of();
         var amount = Money.of(new BigDecimal(100));
 
         //when
-        var result = accountService.deposit(accountId, amount).toCompletableFuture().get();
+        var result = await(accountService.deposit(accountId, amount).toCompletableFuture());
 
         //then
         assertThat(result).isInstanceOf(AccountEntityResponse.CommandProcessed.class);
@@ -53,7 +67,7 @@ public class AccountServiceTest {
         var result = accountService.findAccountBy(accountId).toCompletableFuture().get();
 
         //then
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(accountId);
+        assertThat(result.isEmpty()).isFalse();
+        assertThat(result.get().getId()).isEqualTo(accountId);
     }
 }

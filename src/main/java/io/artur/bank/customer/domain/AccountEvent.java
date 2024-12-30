@@ -8,7 +8,7 @@ public sealed interface AccountEvent extends Serializable {
 
     Instant at();
 
-    record AccountCreated(AccountId accountId, Instant at) implements AccountEvent {
+    record AccountCreated(AccountId accountId, Instant at, InitialAccount initialAccount) implements AccountEvent {
     }
 
     record AccountDeposited(AccountId accountId, Money amount, Money balance, Instant at) implements AccountEvent {

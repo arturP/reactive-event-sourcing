@@ -8,6 +8,7 @@ import io.artur.bank.customer.domain.Account;
 import io.artur.bank.customer.domain.AccountCommand;
 import io.artur.bank.customer.domain.AccountId;
 import io.artur.bank.customer.domain.Money;
+import io.vavr.control.Option;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -28,7 +29,12 @@ public class AccountService {
         }));
     }
 
-    public CompletionStage<Account> findAccountBy(AccountId accountId) {
+    public CompletionStage<AccountEntityResponse> createAccount(String name, String type) {
+        AccountId accountId = AccountId.of();
+        return processCommand(new AccountCommand.CreateAccount(accountId, name, type));
+    }
+
+    public CompletionStage<Option<Account>> findAccountBy(AccountId accountId) {
         return getAccountEntityRef(accountId).ask(replyTo -> new AccountEntityCommand.GetAccount(replyTo), askTimeout);
     }
 

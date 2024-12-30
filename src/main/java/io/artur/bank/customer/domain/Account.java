@@ -1,5 +1,6 @@
 package io.artur.bank.customer.domain;
 
+import io.artur.bank.customer.domain.AccountCommand.CreateAccount;
 import io.artur.bank.customer.domain.AccountCommand.Deposit;
 import io.artur.bank.customer.domain.AccountCommand.GetAccountBalance;
 import io.artur.bank.customer.domain.AccountCommand.Withdraw;
@@ -16,6 +17,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import io.vavr.collection.List;
+
+import static io.artur.bank.customer.domain.AccountCommandError.ACCOUNT_ALREADY_EXISTS;
 
 public class Account implements Serializable {
 
@@ -64,16 +67,18 @@ public class Account implements Serializable {
         return status;
     }
 
-    public static Account create(AccountId accountId, Clock clock) {
-        return new Account(accountId, "Account " + accountId, Money.of(BigDecimal.ZERO), AccountType.SAVINGS, clock.now(), Status.ACTIVE);
-    }
-
     public static Account create(AccountId id, String name, AccountType type, Clock clock) {
         return new Account(id, name, Money.of(BigDecimal.ZERO), type, clock.now(), Status.ACTIVE);
     }
 
+    public static Account create(AccountEvent.AccountCreated accountCreated) {
+        InitialAccount initialAccount = accountCreated.initialAccount();
+        return new Account(initialAccount.accountId(), initialAccount.name(), initialAccount.balance(), AccountType.valueOf(initialAccount.type()), initialAccount.at(), Status.ACTIVE);
+    }
+
     public Either<AccountCommandError, List<AccountEvent>> process(AccountCommand command, Clock clock) {
         return switch (command) {
+            case CreateAccount ignored -> Either.left(ACCOUNT_ALREADY_EXISTS);
             case Deposit deposit -> handleDeposit(deposit, clock);
             case Withdraw withdraw -> handleWithdraw(withdraw, clock);
             case CloseAccount closeAccount -> handleCloseAccount(closeAccount, clock);
@@ -83,11 +88,11 @@ public class Account implements Serializable {
 
     public Account apply(AccountEvent event) {
         return switch (event) {
+            case AccountEvent.AccountCreated ignored -> throw new IllegalStateException("Account is already created, use Account.create instead.");
             case AccountDeposited accountDeposited -> applyDeposited(accountDeposited);
             case AccountWithdrawn accountWithdrawn -> applyWithdrawn(accountWithdrawn);
             case AccountClosed accountClosed -> applyClosed(accountClosed);
             case AccountBalanced accountBalanced -> applyBalanced(accountBalanced);
-            default -> this;
         };
     }
 

@@ -7,6 +7,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.artur.bank.base.domain.Clock;
 import io.artur.bank.customer.domain.*;
+import io.vavr.control.Option;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +55,7 @@ class AccountEntityTest {
         var accountId = AccountId.of();
         var accountEntityRef = testKit.spawn(AccountEntity.create(accountId, clock));
         var commandResponseProbe = testKit.<AccountEntityResponse>createTestProbe();
-        var accountResponseProbe = testKit.<Account>createTestProbe();
+        var accountResponseProbe = testKit.<Option<Account>>createTestProbe();
 
         var accountDeposit = randomDeposit(accountId);
 
@@ -64,7 +65,7 @@ class AccountEntityTest {
 
         accountEntityRef.tell(new AccountEntityCommand.GetAccount(accountResponseProbe.getRef()));
 
-        final Account returnedAccount = accountResponseProbe.receiveMessage();
+        final Account returnedAccount = accountResponseProbe.receiveMessage().get();
         assertThat(returnedAccount.getId()).isEqualTo(accountId);
         assertThat(returnedAccount.getBalance()).isEqualTo(accountDeposit.amount());
     }
