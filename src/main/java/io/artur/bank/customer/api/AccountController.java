@@ -29,8 +29,9 @@ class AccountController {
     public Mono<ResponseEntity<String>> create(@RequestBody CreateAccountRequest request) {
         final String name = request.name();
         final String type = request.type();
+        final AccountId accountId = AccountId.of(request.accountId());
 
-        CompletionStage<ResponseEntity<String>> accountCreateResponse = accountService.createAccount(name, type)
+        CompletionStage<ResponseEntity<String>> accountCreateResponse = accountService.createAccount(accountId, name, type)
                 .thenApply(response -> switch (response) {
             case AccountEntityResponse.CommandProcessed ignored -> new ResponseEntity<>("Account created", HttpStatus.CREATED);
             case AccountEntityResponse.CommandRejected rejected -> transformFromRejection(rejected);
@@ -43,7 +44,7 @@ class AccountController {
         CompletionStage<ResponseEntity<AccountResponse>> accountResponse = accountService.findAccountBy(AccountId.of(accountId))
                 .thenApply(result -> result.map(AccountResponse::from).map(ok()::body)
                         .getOrElse(notFound().build()));
-        
+
         return Mono.fromCompletionStage(accountResponse);
     }
 

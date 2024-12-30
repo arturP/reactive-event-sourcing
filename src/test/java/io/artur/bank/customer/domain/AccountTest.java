@@ -3,19 +3,35 @@ package io.artur.bank.customer.domain;
 import io.artur.bank.base.domain.Clock;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import io.vavr.collection.List;
 
 import io.artur.bank.customer.domain.AccountEvent.AccountDeposited;
 import io.artur.bank.customer.domain.AccountCommand.CloseAccount;
-import static io.artur.bank.customer.domain.AccountCommandGenerator.randomDeposit;
-import static io.artur.bank.customer.domain.AccountCommandGenerator.randomWithdraw;
+
+import static io.artur.bank.customer.domain.AccountCommandGenerator.*;
 import static io.artur.bank.customer.domain.DomainGenerator.randomAccount;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AccountTest {
 
     private final Clock clock = new FixedClock(Instant.now());
+
+    @Test
+    void shouldCreateTheAccount() {
+        final var accountId = AccountId.of();
+        final var createAccount = randomCreateAccount(accountId);
+
+        final var accountCreated = AccountCreator.create(createAccount, clock).get();
+        final var account = Account.create(accountCreated);
+
+        assertThat(account.getId()).isEqualTo(accountId);
+        assertThat(account.getAccountName()).isEqualTo(createAccount.name());
+        assertThat(account.getBalance().isEqual(Money.of(BigDecimal.ZERO))).isTrue();
+        assertThat(account.getAccountType()).isEqualTo(AccountType.valueOf(createAccount.type()));
+        assertThat(account.getCreatedAt()).isEqualTo(clock.now());
+    }
 
     @Test
     void shouldDepositAnAccount() {

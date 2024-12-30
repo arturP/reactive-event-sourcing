@@ -19,9 +19,20 @@ class AccountControllerItTest {
     private WebTestClient webClient;
 
     @Test
+    void shouldCreateAccount() {
+        //given
+        final var createAccountRequest = new CreateAccountRequest(UUID.randomUUID(), "Test", "SAVINGS");
+
+        //when //then
+        createAccount(createAccountRequest);
+    }
+
+    @Test
     void shouldGetAccountById() {
         //given
-        final UUID accountId = UUID.randomUUID();
+        final var createAccountRequest = new CreateAccountRequest(UUID.randomUUID(), "Test", "SAVINGS");
+        final var accountId = createAccountRequest.accountId();
+        createAccount(createAccountRequest);
 
         //when //then
         webClient.get().uri("/accounts/{accountId}", accountId)
@@ -29,6 +40,17 @@ class AccountControllerItTest {
                 .expectStatus().isOk()
                 .expectBody(AccountResponse.class)
                 .value(shouldHaveId(accountId));
+    }
+
+    @Test
+    void shouldGetNotFoundForNonExistingAccount() {
+        //given
+        final var accountId = UUID.randomUUID();
+
+        //when //then
+        webClient.get().uri("/accounts/{accountId}", accountId)
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     private BaseMatcher<AccountResponse> shouldHaveId(UUID accountId) {
@@ -47,5 +69,12 @@ class AccountControllerItTest {
                 description.appendText("AccountResponse should have id: " + accountId);
             }
         };
+    }
+
+    private void createAccount(CreateAccountRequest request) {
+        webClient.post().uri("/accounts")
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isCreated();
     }
 }

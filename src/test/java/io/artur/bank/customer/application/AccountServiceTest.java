@@ -14,6 +14,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static io.artur.bank.customer.application.Blocking.await;
@@ -39,7 +40,7 @@ public class AccountServiceTest {
         var accountType = "SAVINGS";
 
         //when
-        var result = await(accountService.createAccount(accountName, accountType).toCompletableFuture());
+        var result = await(accountService.createAccount(AccountId.of(), accountName, accountType).toCompletableFuture());
 
         //then
         assertThat(result).isInstanceOf(AccountEntityResponse.CommandProcessed.class);

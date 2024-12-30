@@ -1,4 +1,6 @@
 package io.artur.bank.customer.api;
 
-public record CreateAccountRequest(String name, String type) {
+import java.util.UUID;
+
+public record CreateAccountRequest(UUID accountId, String name, String type) {
 }

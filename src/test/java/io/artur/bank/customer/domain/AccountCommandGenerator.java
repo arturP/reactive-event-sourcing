@@ -29,4 +29,8 @@ public class AccountCommandGenerator {
         double randomValue = base.value().doubleValue() * random.nextDouble(); // Generates a random value between 0 and base
         return Money.of(BigDecimal.valueOf(randomValue).setScale(2, RoundingMode.HALF_UP)); // Rounds to 2 decimal places
     }
+
+    public static AccountCommand.CreateAccount randomCreateAccount(AccountId accountId) {
+        return new AccountCommand.CreateAccount(accountId, "John Doe", "SAVINGS");
+    }
 }

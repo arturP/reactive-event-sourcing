@@ -29,8 +29,7 @@ public class AccountService {
         }));
     }
 
-    public CompletionStage<AccountEntityResponse> createAccount(String name, String type) {
-        AccountId accountId = AccountId.of();
+    public CompletionStage<AccountEntityResponse> createAccount(AccountId accountId, String name, String type) {
         return processCommand(new AccountCommand.CreateAccount(accountId, name, type));
     }
 
