@@ -17,7 +17,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <akka.version>2.6.16</akka.version>
+    <akka.version>2.6.18</akka.version>
+    <akka.projection.version>1.2.4</akka.projection.version>
     <slick.version>3.3.3</slick.version>
     <scala.binary.version>2.13</scala.binary.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -76,6 +77,22 @@
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>42.2.23</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.lightbend.akka</groupId>
+      <artifactId>akka-projection-core_${scala.binary.version}</artifactId>
+      <version>${akka.projection.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.lightbend.akka</groupId>
+      <artifactId>akka-projection-jdbc_${scala.binary.version}</artifactId>
+      <version>${akka.projection.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.lightbend.akka</groupId>
+      <artifactId>akka-projection-eventsourced_${scala.binary.version}</artifactId>
+      <version>${akka.projection.version}</version>
     </dependency>
 
     <dependency>
