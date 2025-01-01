@@ -13,6 +13,9 @@ import io.artur.bank.customer.domain.*;
 import io.vavr.collection.List;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
+import scala.concurrent.impl.FutureConvertersImpl;
+
+import java.util.Set;
 
 import static io.artur.bank.customer.domain.AccountCommandError.ACCOUNT_NOT_EXIST;
 
@@ -20,6 +23,7 @@ public class AccountEntity extends EventSourcedBehaviorWithEnforcedReplies<Accou
 
     public static final EntityTypeKey<AccountEntityCommand> ACCOUNT_ENTITY_TYPE_KEY =
             EntityTypeKey.create(AccountEntityCommand.class, "Account");
+    public static final String ACCOUNT_EVENT_TAG = "AccountEvent";
 
     private final AccountId accountId;
     private final Clock clock;
@@ -32,9 +36,13 @@ public class AccountEntity extends EventSourcedBehaviorWithEnforcedReplies<Accou
         this.context = context;
     }
 
+    public static PersistenceId persistenceId(AccountId accountId) {
+        return PersistenceId.of(ACCOUNT_ENTITY_TYPE_KEY.name(), accountId.id().toString());
+    }
+
     public static Behavior<AccountEntityCommand> create(AccountId accountId, Clock clock) {
         return Behaviors.setup(context-> {
-            PersistenceId persistenceId = PersistenceId.of("Account", accountId.id().toString());
+            PersistenceId persistenceId = AccountEntity.persistenceId(accountId);
             context.getLog().info("AccountEntity {} initialization started", accountId);
             return new AccountEntity(persistenceId, accountId, clock, context);
         });
@@ -121,5 +129,10 @@ public class AccountEntity extends EventSourcedBehaviorWithEnforcedReplies<Accou
                 return Effect().persist(events.toJavaList()).thenReply(envelope.replyTo(), s -> new CommandProcessed());
             }
         );
+    }
+
+    @Override
+    public Set<String> tagsFor(AccountEvent accountEvent) {
+        return Set.of(ACCOUNT_EVENT_TAG);
     }
 }
